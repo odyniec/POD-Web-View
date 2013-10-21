@@ -1,0 +1,79 @@
+html, body {
+    height: 100%;
+}
+
+body {
+    padding-top: 70px;
+}
+
+/* Wrapper for page content to push down footer */
+#wrap {
+    min-height: 100%;
+    height: auto !important;
+    height: 100%;
+    /* Negative indent footer by its height */
+    margin: 0 auto -60px;
+    /* Pad bottom by footer height */
+    padding: 0 0 60px;
+}
+
+main.container {
+    overflow: auto;
+}
+
+#footer {
+    background-color: #f5f5f5;
+    border-top: solid 1px #ddd;
+    color: #888;
+    height: 59px;
+}
+
+#footer div.col-md-4 {
+    line-height: 59px;
+}
+
+#editor {
+    border: solid 1px #aaa;
+    border-radius: 0.3em;
+    width: 100%;
+    min-height: 400px;
+}
+
+.output-col {
+    height: 100%;
+}
+
+.output-frame {
+    border-width: 1px;
+    border-radius: 0.3em;
+    width: 100%;
+}
+
+.output-col .output-frame {
+    min-height: 400px;
+    position: relative;
+}
+
+#file-drop {
+    color: #aaa;
+    font-size: 200%;
+    padding: 2em 2em;
+    text-align: center;
+}
+
+#file-drop.active {
+    color: #bbb;
+    
+}
+
+#output-modal .modal-dialog {
+    width: 80%;
+}
+
+.top-row {
+    height: 3.8em;
+}
+
+.error-message {
+    color: #b94a48;
+}

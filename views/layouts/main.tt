@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+  <head>
+    <meta http-equiv="Content-type" content="text/html; charset=<% settings.charset %>" />
+    <title>POD Web View</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+
+    <!-- Grab Google CDN's jQuery. fall back to local if necessary -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript">/* <![CDATA[ */
+        !window.jQuery && document.write('<script type="text/javascript" src="<% request.uri_base %>/javascripts/jquery.js"><\/script>')
+    /* ]]> */</script>
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+
+    <script src="/javascripts/bootbox.min.js"></script>
+
+    <script>
+      $(function () {
+          $('nav a[href="' + window.location.pathname + '"]').parent().addClass('active');
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="wrap">
+      <nav class="navbar navbar-default navbar-fixed-top navbar-inverse" role="navigation">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              <a class="navbar-brand" href="/"><strong>POD Web View</strong></a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+              <ul class="nav navbar-nav navbar-right">
+                <li><a href="/about">About</a></li>
+                <li><a href="#">GitHub Project <span class="glyphicon glyphicon-share-alt"></span></a></li>
+              </ul>
+            </div>  
+        </div><!-- /.navbar-collapse -->
+      </nav>
+
+      <main class="container">
+        <% content %>
+      </main>
+    </div>
+
+    <div id="footer">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-4">
+            Hacked together by
+            <a href="http://odyniec.net/">Michał Wojciechowski</a>
+          </div>
+          <div class="col-md-4">
+          </div>
+          <div class="col-md-4 text-right">
+            Powered by
+            <a href="http://www.perl.org/">
+              <img src="/images/perl5-raptor-40.png" /></a>
+            and
+            <a href="http://perldancer.org/">
+              <img src="/images/dancer-logo-2-40.png" />
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,317 @@
+<script src="/javascripts/ace/src-min-noconflict/ace.js" type="text/javascript"
+  charset="utf-8"></script>
+<script type="text/javascript">
+var submitTimer, currentStyle = '', editor;
+var stylesheets = {
+    'cpan': [
+        '/css/pod-stylesheets/orig/cpan.css'
+    ],
+    'metacpan': [
+        '/css/pod-stylesheets/orig/metacpan.css',
+        '/css/pod-stylesheets/metacpan.css'
+    ],
+    'github': [
+        '/css/pod-stylesheets/orig/github.css',
+        '/css/pod-stylesheets/github.css'
+    ],
+    'none': []
+};
+
+function submitPod(pod, keepStyle) {
+    $.post('/podhtml', { pod: pod })
+        .done(function (data) {
+            /* Add stylesheet(s) for the currently selected style */
+            $.each(stylesheets[currentStyle], function (index, value) {
+                data = data.replace(/<\/head>/,
+                    '<link class="pod-stylesheet" rel="stylesheet" ' +
+                    'type="text/css" href="' + value + '"></head>');
+            });
+
+            /* Put HTML into iframes */
+            var doc1 = $('.output-frame')[0].contentDocument,
+                doc2 = $('.output-frame')[1].contentDocument;
+            doc1.open();
+            doc1.write(data);
+            doc1.close();
+            doc2.open();
+            doc2.write(data);
+            doc2.close();
+        });
+}
+
+function applyStyle(style) {
+    if (style === undefined) {
+        style = $('#style-select li.active').data('style');
+    }
+
+    if (style === undefined) {
+        style = 'cpan';
+    }
+
+    var doc1 = $('.output-frame')[0].contentDocument,
+        doc2 = $('.output-frame')[1].contentDocument;
+    var $heads = $('head', doc1).add($('head', doc2));
+
+    $('link.pod-stylesheet', $heads).remove();
+    $.each(stylesheets[style], function (index, value) {
+        $heads.append('<link class="pod-stylesheet" rel="stylesheet" ' +
+        'type="text/css" href="' + value + '" />');
+    });
+
+    currentStyle = style;
+}
+
+function checkFileSize(file) {
+    if (file.size > <% file_size_limit %>) {
+        bootbox.alert({
+            message: 'File too big - maximum allowed size is ' +
+                (<% file_size_limit %> / 1000) + 'kB',
+            animate: false,
+            className: 'error-message',
+            buttons: {
+                ok: {
+                    className: 'btn-default'
+                }
+            }
+        });
+        return false;
+    }
+
+    return true;
+}
+
+$(function () {
+    /* Standard file upload */
+    $('#file-upload').change(function () {
+        if (!checkFileSize($(this)[0].files[0]))
+            return;
+
+        var reader = new FileReader();
+        reader.onload = function (event) {
+            submitPod(reader.result);
+        };
+        reader.readAsText($(this)[0].files[0]);
+    });
+
+    /* Drag and drop file upload */
+    $('#file-drop')
+        .on('dragenter dragover drop', function (event) {
+            event.stopPropagation();
+            event.preventDefault();
+        })
+        .on('drop', function (event) {
+            var dt = event.originalEvent.dataTransfer;
+            var files = dt.files;
+
+            if (!checkFileSize(files[0]))
+                return;
+
+            var reader = new FileReader();
+            reader.onload = function (event) {
+                submitPod(reader.result);
+            };
+            reader.readAsText(files[0]);
+        });
+
+    /* Read POD from the given URL */
+    $('#url-submit').click(function () {
+        if ($('#source-url').val() != '') {
+            $.get($('#source-url').val())
+                .done(function (data) {
+                    submitPod(data);
+                });
+        }
+    });
+
+    $('.dropdown-toggle').dropdown();
+
+    /* Style selection dropdown */
+    $('#style-select li').click(function (event) {
+        $('#style-select button span:first-child').text($(this).text());
+        applyStyle($(this).data('style'));
+    });
+
+    /* Select CPAN initially */
+    $('#style-select li[data-style="cpan"]').click();
+
+    /* Expanded view button */
+    $('#expand').click(function () {
+        $('#output-modal').modal('show');
+    });
+
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function (event) {
+        /* If this is the "Source" tab, activate the editor */
+        if ($(event.target).attr('href') == '#source') {
+            editor.focus();
+        }
+    })
+
+    /* Initialize ACE editor */
+    editor = ace.edit("editor");
+    editor.setTheme("ace/theme/clouds");
+    editor.getSession().setMode("ace/mode/perl");
+
+    /* Submit POD 1 second after the last change was made */
+    editor.getSession().on('change', function () {
+        clearTimeout(submitTimer);
+        submitTimer = setTimeout(function () {
+            submitPod(editor.getValue());
+        }, 1000);
+    });
+
+    editor.focus();
+
+    /* Adjust editor and output frame dimensions when the window is resized */
+    $(window).resize(function () {
+        $('main.container').css('height', 
+            ($(window).height() - $('#wrap .navbar').outerHeight(true) -
+                $('#footer').outerHeight(true))
+        );
+
+        $('#output').height($('#footer').offset().top - 
+            $('#output').offset().top - 20);
+        $('#editor').height($('#footer').offset().top - 
+            $('#editor').offset().top - 20);
+    });
+
+    /* Trigger the resize event to initially adjust dimensions */
+    $(window).resize();
+
+    $('#output-modal').on('show.bs.modal', function () {
+        $('.modal-content').css('height', (0.85 * $(window).height()) + 'px');
+        console.log($('.modal-content').outerHeight());
+        console.log($('.modal-content .output-frame').offset().top);
+    });
+
+    $('#output-modal').on('shown.bs.modal', function () {
+        console.log($('.modal-content').innerHeight());
+        console.log($('.modal-header').outerHeight());
+        $('.modal-content .output-frame').height(
+            $('.modal-content').innerHeight() -
+            $('.modal-header').outerHeight() -
+            parseInt($('.modal-body').css('padding-top')) * 2);
+    });
+});
+</script>
+
+<div class="row">
+  <div class="col-md-6">
+    <div class="row top-row">
+      <div class="col-md-4">
+        <h4 class="pull-left">Input</h4>
+      </div>
+      <div class="col-md-8">
+        <ul id="input" class="nav nav-tabs" data-tabs="tabs">
+          <li class="active"><a href="#source" data-toggle="tab">Source</a></li>
+          <li><a href="#file" data-toggle="tab">File</a></li>
+          <li><a href="#url" data-toggle="tab">URL</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <div id="input-panes" class="tab-content">
+          
+          <!-- Source code pane -->
+          <div class="tab-pane active" id="source">
+            <div id="editor"></div>   
+            <script>
+            </script>
+          </div>
+
+          <!-- File upload pane -->
+          <div class="tab-pane" id="file">
+            <div class="panel panel-default">
+              <div class="panel-body">
+                <p class="lead">
+                  Upload a file
+                </p>
+
+                <input id="file-upload" type="file" />
+              </div>
+            </div>
+
+            <p class="lead text-center">
+              or
+            </p>
+
+            <div id="file-drop" class="well">
+              drag and drop your file here
+            </div>
+          </div>
+
+          <!-- URL pane -->
+          <div class="tab-pane" id="url">
+            <div class="panel panel-default">
+              <div class="panel-body">
+                <p class="lead">
+                  Enter URL
+                </p>
+
+                <p>
+                  <input id="source-url" type="text" class="form-control"
+                    value="" />
+                </p>
+                
+                <p class="text-right">
+                  <button type="button" id="url-submit"
+                    class="btn btn-primary">Submit</button>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-6 output-col">
+    <div class="row top-row">
+      <div class="col-md-4">
+        <h4>Output</h4>
+      </div>
+      <div class="col-md-8">
+        Style: &nbsp;
+        <div id="style-select" class="btn-group">
+          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+            <span>Select style</span> <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu" role="menu">
+            <li data-style="cpan"><a href="#">CPAN</a></li>
+            <li data-style="metacpan"><a href="#">Metacpan</a></li>
+            <li data-style="github"><a href="#">GitHub</a></li>
+            <li data-style="none"><a href="#">None (plain HTML)</a></li>
+          </ul>
+        </div>
+
+        <div class="btn-group pull-right">
+          <button id="expand" type="button" class="btn btn-default"
+            title="Expanded view">
+            <span class="glyphicon glyphicon-new-window"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12 output-col">
+        <iframe id="output" class="output-frame"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="output-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">Output</h4>
+      </div>
+      <div class="modal-body">
+        <iframe class="output-frame"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
