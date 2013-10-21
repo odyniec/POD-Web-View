@@ -46,7 +46,7 @@
             <div class="collapse navbar-collapse navbar-ex1-collapse">
               <ul class="nav navbar-nav navbar-right">
                 <li><a href="/about">About</a></li>
-                <li><a href="#">GitHub Project <span class="glyphicon glyphicon-share-alt"></span></a></li>
+                <li><a href="https://github.com/odyniec/POD-Web-View">GitHub Project <span class="glyphicon glyphicon-share-alt"></span></a></li>
               </ul>
             </div>  
         </div><!-- /.navbar-collapse -->
