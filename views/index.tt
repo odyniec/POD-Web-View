@@ -39,48 +39,60 @@ var scripts = {
 var formatters = {
     'cpan': function (doc) {},
     'metacpan': function (doc) {
-        console.log('formatter');
         $('pre', doc).attr('class', 
             "brush: pl; class-name: 'highlight'; toolbar: false; gutter: false");
-        //$('body', doc).append('<script>SyntaxHighlighter.all();</scr' + 'ipt>');
     },
     'github': function (doc) {},
     'none': function (doc) {}
 };
 
-var origHTML = '';
+var origHTML;
+
+function prepareDocument() {
+    if (origHTML === undefined)
+        return;
+
+    var html = origHTML;
+
+    /* Add stylesheet(s) for the currently selected style */
+    $.each(stylesheets[currentStyle], function (index, value) {
+        html = html.replace(/<\/head>/,
+            '<link class="pod-stylesheet" rel="stylesheet" ' +
+            'type="text/css" href="' + value + '"></head>');
+    });
+
+    $.each(scripts[currentStyle], function (index, value) {
+        html = html.replace(/<\/body>/,
+            '<script type="text/javascript" class="pod-script" defer ' +
+            'src="' + value + '"></scr' + 'ipt></body>');
+    });
+
+    var $iframe1 = $('<iframe class="output-frame"></iframe>'),
+        $iframe2 = $('<iframe class="output-frame"></iframe>');
+    
+    $iframe1.insertAfter($('.output-frame').eq(0));
+    $('.output-frame').eq(0).remove();
+    $iframe1.attr('id', 'output');
+    $iframe2.insertAfter($('.output-frame').eq(1));
+    $('.output-frame').eq(1).remove();
+    
+    $(window).resize();
+
+    $('.output-frame').each(function () {
+        var doc = $(this)[0].contentDocument;
+
+        doc.open();
+        doc.write(html);
+        formatters[currentStyle](doc);
+        doc.close();
+    });
+}
 
 function submitPod(pod, keepStyle) {
     $.post('/podhtml', { pod: pod })
         .done(function (data) {
             origHTML = data;
-
-            /* Add stylesheet(s) for the currently selected style */
-            $.each(stylesheets[currentStyle], function (index, value) {
-                data = data.replace(/<\/head>/,
-                    '<link class="pod-stylesheet" rel="stylesheet" ' +
-                    'type="text/css" href="' + value + '"></head>');
-            });
-
-            $.each(scripts[currentStyle], function (index, value) {
-                data = data.replace(/<\/body>/,
-                    '<script type="text/javascript" class="pod-script" ' +
-                    'src="' + value + '"></scr' + 'ipt></body>');
-            });
-
-            /* Put HTML into iframes */
-            var doc1 = $('.output-frame')[0].contentDocument,
-                doc2 = $('.output-frame')[1].contentDocument;
-            doc1.open();
-            doc1.write(data);
-            doc2.open();
-            doc2.write(data);
-            
-            formatters[currentStyle](doc1);
-            formatters[currentStyle](doc2);
-
-            doc1.close();
-            doc2.close();
+            prepareDocument();
         });
 }
 
@@ -93,34 +105,12 @@ function applyStyle(style) {
         style = 'cpan';
     }
 
-    var doc1 = $('.output-frame')[0].contentDocument,
-        doc2 = $('.output-frame')[1].contentDocument;
-
-    doc1.open();
-    doc1.write(origHTML);
-    doc2.open();
-    doc2.write(origHTML);
-
-    var $heads = $('head', doc1).add($('head', doc2));
-    var $bodies = $('body', doc1).add($('body', doc2));
-
-    $.each(stylesheets[style], function (index, value) {
-        $heads.append('<link class="pod-stylesheet" rel="stylesheet" ' +
-        'type="text/css" href="' + value + '" />');
-    });
-
-    $.each(scripts[style], function (index, value) {
-        $bodies.append('<script type="text/javascript" ' +
-            'src="' + value + '" class="pod-script"></scr' + 'ipt>');
-    });
-
-    formatters[style](doc1);
-    formatters[style](doc2);
-
-    doc1.close();
-    doc2.close();
+    if (style == currentStyle)
+        return;
 
     currentStyle = style;
+
+    prepareDocument();
 }
 
 function checkFileSize(file) {
@@ -358,7 +348,7 @@ $(function () {
 
     <div class="row">
       <div class="col-md-12 output-col">
-        <iframe id="output" class="output-frame"></iframe>
+        <iframe id="output" class="output-frame" src="about:blank"></iframe>
       </div>
     </div>
   </div>
@@ -372,7 +362,7 @@ $(function () {
         <h4 class="modal-title">Output</h4>
       </div>
       <div class="modal-body">
-        <iframe class="output-frame"></iframe>
+        <iframe class="output-frame" src="about:blank"></iframe>
       </div>
     </div>
   </div>
