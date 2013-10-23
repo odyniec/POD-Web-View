@@ -70,9 +70,12 @@ function prepareDocument() {
     var $iframe1 = $('<iframe class="output-frame"></iframe>'),
         $iframe2 = $('<iframe class="output-frame"></iframe>');
     
+    $iframe1.hide();
     $iframe1.insertAfter($('.output-frame').eq(0));
     $('.output-frame').eq(0).remove();
     $iframe1.attr('id', 'output');
+    $iframe1.show();
+
     $iframe2.insertAfter($('.output-frame').eq(1));
     $('.output-frame').eq(1).remove();
     
@@ -223,7 +226,7 @@ $(function () {
         $('#output').height($('#footer').offset().top - 
             $('#output').offset().top - 20);
         $('#editor').height($('#footer').offset().top - 
-            $('#editor').offset().top - 20);
+            $('#output').offset().top - 20);
     });
 
     /* Trigger the resize event to initially adjust dimensions */
