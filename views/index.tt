@@ -69,13 +69,16 @@ function prepareDocument() {
 
     var $iframe1 = $('<iframe class="output-frame"></iframe>'),
         $iframe2 = $('<iframe class="output-frame"></iframe>');
-    
+
+    /* Keep the output iframe's scrollbar position */
+    var outputScrollTop = $('#output').contents().scrollTop();
+
     $iframe1.hide();
     $iframe1.insertAfter($('.output-frame').eq(0));
     $('.output-frame').eq(0).remove();
     $iframe1.attr('id', 'output');
     $iframe1.show();
-
+    
     $iframe2.insertAfter($('.output-frame').eq(1));
     $('.output-frame').eq(1).remove();
     
@@ -89,6 +92,9 @@ function prepareDocument() {
         formatters[currentStyle](doc);
         doc.close();
     });
+
+    /* Move the scrollbar to where it was before the update */
+    $iframe1.contents().scrollTop(outputScrollTop);
 }
 
 function submitPod(pod, keepStyle) {
@@ -234,13 +240,9 @@ $(function () {
 
     $('#output-modal').on('show.bs.modal', function () {
         $('.modal-content').css('height', (0.85 * $(window).height()) + 'px');
-        console.log($('.modal-content').outerHeight());
-        console.log($('.modal-content .output-frame').offset().top);
     });
 
     $('#output-modal').on('shown.bs.modal', function () {
-        console.log($('.modal-content').innerHeight());
-        console.log($('.modal-header').outerHeight());
         $('.modal-content .output-frame').height(
             $('.modal-content').innerHeight() -
             $('.modal-header').outerHeight() -
