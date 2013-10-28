@@ -97,11 +97,15 @@ function prepareDocument() {
     $iframe1.contents().scrollTop(outputScrollTop);
 }
 
-function submitPod(pod, keepStyle) {
+function submitPod(pod, callback) {
     $.post('/podhtml', { pod: pod })
         .done(function (data) {
             origHTML = data;
             prepareDocument();
+
+            if (typeof callback === 'function') {
+                callback.call(window, pod);
+            }
         });
 }
 
@@ -142,6 +146,12 @@ function checkFileSize(file) {
 }
 
 $(function () {
+    function fileUploaded(pod) {
+        if ($('#file-load-source').is(':checked')) {
+            editor.getSession().setValue(pod, -1);
+        }
+    }
+
     /* Standard file upload */
     $('#file-upload').change(function () {
         if (!checkFileSize($(this)[0].files[0]))
@@ -149,7 +159,7 @@ $(function () {
 
         var reader = new FileReader();
         reader.onload = function (event) {
-            submitPod(reader.result);
+            submitPod(reader.result, function (pod) { fileUploaded(pod); });
         };
         reader.readAsText($(this)[0].files[0]);
     });
@@ -169,7 +179,7 @@ $(function () {
 
             var reader = new FileReader();
             reader.onload = function (event) {
-                submitPod(reader.result);
+                submitPod(reader.result, function (pod) { fileUploaded(pod); });
             };
             reader.readAsText(files[0]);
         });
@@ -203,6 +213,11 @@ $(function () {
     $('a[data-toggle="tab"]').on('shown.bs.tab', function (event) {
         /* If this is the "Source" tab, activate the editor */
         if ($(event.target).attr('href') == '#source') {
+            /*
+             * This .resize() call is needed to refresh the document if it was
+             * loaded while the editor was not visible
+             */
+            editor.resize();
             editor.focus();
         }
     })
@@ -295,6 +310,13 @@ $(function () {
 
             <div id="file-drop" class="well">
               drag and drop your file here
+            </div>
+
+            <div class="checkbox">
+              <input id="file-load-source" type="checkbox" />
+              <label for="file-load-source">
+                place POD source in editor
+              </label>
             </div>
           </div>
 
