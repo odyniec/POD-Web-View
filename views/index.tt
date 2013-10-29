@@ -4,7 +4,8 @@
 var submitTimer, currentStyle = '', editor;
 var stylesheets = {
     'cpan': [
-        '/css/pod-stylesheets/orig/cpan.css'
+        '/css/pod-stylesheets/orig/cpan.css',
+        '/css/pod-stylesheets/cpan.css'
     ],
     'metacpan': [
         '/css/pod-stylesheets/orig/metacpan.css',
