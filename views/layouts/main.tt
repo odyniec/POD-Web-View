@@ -3,6 +3,8 @@
   <head>
     <meta http-equiv="Content-type" content="text/html; charset=<% settings.charset %>" />
     <title>POD Web View</title>
+    <meta name="description" content="Preview your POD (Plain Old Documentation) file as it will
+    appear on CPAN Search, MetaCPAN, and GitHub." />
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
     <!-- Optional theme -->
