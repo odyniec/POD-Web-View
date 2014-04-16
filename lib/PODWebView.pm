@@ -19,14 +19,29 @@ get '/' => sub {
 
 post '/podhtml' => sub {
     if (request->is_ajax) {
-        $p->output_string(\my $html);
-        $p->parse_string_document(params->{pod});
-        $p->reinit;
-        return $html;
+        eval {
+            return process_pod(params->{pod});
+        }
+        or do {
+            # We can recover from some errors by creating a new instance of the
+            # parser object, so let's try that.
+            $p = Pod::Simple::HTML->new;
+            return process_pod(params->{pod});
+        };
     }
     else {
         return error("Not allowed", 403);
     }
 };
+
+sub process_pod {
+    my ($pod) = @_;
+
+    $p->output_string(\my $html);
+    $p->parse_string_document($pod);
+    $p->reinit;
+
+    return $html;
+}
 
 true;
