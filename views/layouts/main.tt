@@ -14,7 +14,7 @@
     <!-- Grab Google CDN's jQuery. fall back to local if necessary -->
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     <script type="text/javascript">/* <![CDATA[ */
-        !window.jQuery && document.write('<script type="text/javascript" src="<% request.uri_base %>/javascripts/jquery.js"><\/script>')
+        !window.jQuery && document.write('<script type="text/javascript" src="<% request.uri_base %>/javascripts/jquery-2.1.0.min.js"><\/script>')
     /* ]]> */</script>
 
     <!-- Latest compiled and minified JavaScript -->
