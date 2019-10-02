@@ -147,8 +147,8 @@ function checkFileSize(file) {
 }
 
 $(function () {
-    function fileUploaded(pod) {
-        if ($('#file-load-source').is(':checked')) {
+    function fileUploaded(pod, load_anyway = 0) {
+        if ($('#file-load-source').is(':checked') || load_anyway) {
             editor.getSession().setValue(pod, -1);
         }
     }
@@ -264,6 +264,12 @@ $(function () {
             $('.modal-header').outerHeight() -
             parseInt($('.modal-body').css('padding-top')) * 2);
     });
+
+    // Load POD data is it was passed in via 'url' parameter
+    var pod_data = unescape(<% pod_data %>);
+    if (pod_data) {
+        submitPod(pod_data, function(pod){ fileUploaded(pod, 1) });
+    }
 });
 </script>
 
