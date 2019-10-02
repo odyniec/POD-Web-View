@@ -6,14 +6,28 @@ use Dancer::Plugin::Preprocess::Markdown;
 use Cwd qw(abs_path);
 use Pod::Simple::HTML;
 
-our $VERSION = '0.1';
+our $VERSION = '0.2';
 
 use Pod::Simple::HTML;
 my $p = Pod::Simple::HTML->new;
 
 get '/' => sub {
+    my $url = param 'url';
+    my $url_content;
+    if ($url) {
+        require HTTP::Tiny;
+        my $response = HTTP::Tiny->new->get($url);
+        if ($response->{success}) {
+            require Encode;
+            require JavaScript::Value::Escape;
+            $url_content = JavaScript::Value::Escape::js(
+                Encode::decode('UTF-8',$response->{content})
+            );
+        }
+    }
     template 'index', {
-        file_size_limit => config->{app_settings}->{file_size_limit}
+        file_size_limit => config->{app_settings}->{file_size_limit},
+        pod_data => $url_content ? "'$url_content'" : "''",
     };
 };
 
